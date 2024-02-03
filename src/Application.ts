@@ -9,9 +9,7 @@ import { StringBuffer } from './io/StringBuffer'
 import * as net from 'net'
 import { DefaultExecutor, ItemExecutor, NewExecutor, ServerExecutor } from './executors'
 import * as process from 'process'
-import { BasePlugin } from '../plugins/base'
-import { TimePlugin } from '../plugins/time/TimePlugin'
-import { ConfigPlugin } from '../plugins/config'
+import { BasePlugin, ConfigPlugin, TimePlugin } from './plugins'
 
 /**
  * Application.

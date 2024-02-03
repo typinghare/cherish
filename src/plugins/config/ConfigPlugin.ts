@@ -1,4 +1,4 @@
-import { Plugin } from '../../core'
+import { Plugin } from '../../plugin/Plugin'
 import { ConfigExecutor } from './ConfigExecutor'
 
 /**

@@ -31,37 +31,38 @@ export class Server extends EasyApplicationBased<Application> {
      * Starts this server.
      */
     public start(): void {
-        this.server = net.createServer((socket) => {
-            const onReceiveData = (data: Buffer): void => {
-                const commandLineArgs: string[] = JSON.parse(data.toString('utf-8'))
-                const clientAddress = socket.address()
+        const onReceiveData = (data: Buffer, socket: net.Socket): void => {
+            const commandLineArgs: string[] = JSON.parse(data.toString('utf-8'))
+            const clientAddress = socket.address()
 
-                if ('address' in clientAddress && 'port' in clientAddress) {
-                    const url = clientAddress.address + ':' + clientAddress.port
-                    this.logger.info(`Received a command from: ${url}`)
+            if ('address' in clientAddress && 'port' in clientAddress) {
+                const url = clientAddress.address + ':' + clientAddress.port
+                this.logger.info(`Received a command from: ${url}`)
 
-                    // Execute the command natively
-                    try {
-                        const stringBuffer = this.application.executeNatively(commandLineArgs)
-                        const message = stringBuffer !== undefined ? stringBuffer.toString() : ''
+                // Execute the command natively
+                try {
+                    const stringBuffer = this.application.executeNatively(commandLineArgs)
+                    const message = stringBuffer !== undefined ? stringBuffer.toString() : ''
 
-                        // response
-                        socket.write(message)
-                    } catch (e) {
-                        if (e instanceof Error) {
-                            socket.write(
-                                'Fail to execute command: ' + addTrailingNewline(e.message)
-                            )
-                        }
+                    // response
+                    socket.write(message)
+                } catch (e) {
+                    if (e instanceof Error) {
+                        socket.write('Fail to execute command: ' + addTrailingNewline(e.message))
                     }
-                } else {
-                    this.logger.warn('Received a command from an unknown device.')
                 }
+            } else {
+                this.logger.warn('Received a command from an unknown device.')
             }
+        }
 
-            socket.on('data', onReceiveData)
-        })
+        const afterCreatedServer = (socket: net.Socket): void => {
+            socket.on('data', (data) => {
+                onReceiveData(data, socket)
+            })
+        }
 
+        this.server = net.createServer(afterCreatedServer)
         if (this.server !== undefined) {
             this.server.listen(this.port, () => {
                 this.logger.info(`Server is listening on port ${this.port} ...`)

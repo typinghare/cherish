@@ -1,3 +1,11 @@
 # Cherish
 
-[Cherish](https://github.com/typinghare/cherish)
+## Install
+
+~~~
+npm install -g @typinghare/cherish
+~~~
+
+## Get Started
+
+

@@ -1,5 +1,7 @@
-import { Entry, EntryObject, FailToLoadEntryException, Plugin } from '../../core'
 import moment from 'moment'
+import { Entry, EntryObject } from '../../entry/Entry'
+import { FailToLoadEntryException } from '../../entry/EntryManager'
+import { Plugin } from '../../plugin/Plugin'
 
 export class TimePlugin extends Plugin {
     public override onLoad(entry: Entry, object: Partial<EntryObject>): void {

@@ -1,6 +1,8 @@
-import { Entry, EntryObject, FailToCreateEntryException, FailToLoadEntryException, Plugin } from '../../core'
 import { BaseNewCommandExecutor } from './BaseNewExecutor'
 import { BaseEntryManager } from './BaseEntryManager'
+import { Entry, EntryObject } from '../../entry/Entry'
+import { FailToCreateEntryException, FailToLoadEntryException } from '../../entry/EntryManager'
+import { Plugin } from '../../plugin/Plugin'
 
 /**
  * Base plugin.

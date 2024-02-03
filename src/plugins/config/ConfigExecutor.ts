@@ -1,15 +1,13 @@
-import {
-    Application,
-    CommandLine,
-    CommandLineTemplate,
-    CONF_LEVEL,
-    ConfigurationData,
-    ConfigurationManager,
-    Executor,
-    objectToString,
-    OptionTemplate,
-    StringBuffer,
-} from '../../core'
+import { Executor } from '../../command/Executor'
+import { CommandLineTemplate } from '../../command/CommandLineTemplate'
+import { OptionTemplate } from '../../command/OptionTemplate'
+import { Application } from '../../Application'
+import { StringBuffer } from '../../io/StringBuffer'
+import { ConfigurationManager } from '../../configuration/ConfigurationManager'
+import { objectToString } from '../../Utility'
+import { ConfigurationData } from '../../configuration/Configuration'
+import { CONF_LEVEL } from '../../Constants'
+import { CommandLine } from '../../command/CommandLine'
 
 export class ConfigExecutor extends Executor {
     public constructor() {

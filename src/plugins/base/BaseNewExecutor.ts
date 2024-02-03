@@ -1,4 +1,9 @@
-import { Application, CommandLine, CommandLineTemplate, EntryManager, Executor, StringBuffer } from '../../core/'
+import { Executor } from '../../command/Executor'
+import { CommandLineTemplate } from '../../command/CommandLineTemplate'
+import { Application } from '../../Application'
+import { EntryManager } from '../../entry/EntryManager'
+import { StringBuffer } from '../../io/StringBuffer'
+import { CommandLine } from '../../command/CommandLine'
 
 /**
  * Executor for command that creates an entry.
