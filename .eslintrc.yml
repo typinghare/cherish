@@ -7,6 +7,7 @@ parserOptions:
   project: [ './tsconfig.eslint.json' ]
 rules:
   'no-trailing-spaces': 'off'
+  '@typescript-eslint/comma-dangle': 'off'
   '@typescript-eslint/consistent-type-imports': 'off'
   '@typescript-eslint/indent': [ 'error', 4 ]
   '@typescript-eslint/space-before-function-paren': 'off'
