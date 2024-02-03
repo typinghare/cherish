@@ -7,11 +7,15 @@ import { IOManager } from './io/IOManager'
 import { NetworkManager } from './network/NetworkManager'
 import { StringBuffer } from './io/StringBuffer'
 import * as net from 'net'
-import { DefaultExecutor, NewExecutor, ServerExecutor } from './executors'
+import { DefaultExecutor, ItemExecutor, NewExecutor, ServerExecutor } from './executors'
 import * as process from 'process'
 import { BasePlugin } from '../plugins/base'
 import { TimePlugin } from '../plugins/time/TimePlugin'
+import { ConfigPlugin } from '../plugins/config'
 
+/**
+ * Application.
+ */
 export class Application extends EasyApplication {
     public constructor() {
         super([
@@ -27,6 +31,7 @@ export class Application extends EasyApplication {
     public override init(): void {
         this.initExecutors()
         this.initPlugins()
+        this.initEntries()
     }
 
     /**
@@ -37,6 +42,7 @@ export class Application extends EasyApplication {
         executorManager.register(new DefaultExecutor())
         executorManager.register(new ServerExecutor())
         executorManager.register(new NewExecutor())
+        executorManager.register(new ItemExecutor())
     }
 
     /**
@@ -48,12 +54,23 @@ export class Application extends EasyApplication {
 
         pluginManager.register(BasePlugin)
         pluginManager.register(TimePlugin)
+        pluginManager.register(ConfigPlugin)
 
         // Enable some plugins
-        const plugins: string[] = this.use(ConfigurationManager).getCurrent().getValue('plugins')
+        const plugins: string[] = this.use(ConfigurationManager)
+            .getCurrent()
+            .getValue('plugin.list')
         for (const plugin of plugins) {
             pluginManager.enable(plugin)
         }
+    }
+
+    /**
+     * Initializes entries.
+     * @private
+     */
+    private initEntries(): void {
+        this.use(EntryManager).loadFromDatabase()
     }
 
     /**
@@ -70,13 +87,16 @@ export class Application extends EasyApplication {
                 client.end()
                 process.stdout.write(data.toString('utf-8'))
             }
-            networkManager.server.communicate(onConnected, onReceiveData)
+            networkManager.communicate(onConnected, onReceiveData)
         }
         const executeNatively = (): void => {
             const stringBuffer = this.executeNatively(commandLineArgs)
             if (stringBuffer !== undefined) {
                 process.stdout.write(stringBuffer.toString())
             }
+
+            // Close the application
+            this.close()
         }
 
         void networkManager.checkServer().then(executeWithServer).catch(executeNatively)
@@ -88,5 +108,12 @@ export class Application extends EasyApplication {
      */
     public executeNatively(commandLineArgs: string[]): StringBuffer | undefined {
         return this.use(ExecutorManager).execute(commandLineArgs)
+    }
+
+    /**
+     * Close the application.
+     */
+    public close(): void {
+        this.use(EntryManager).persist()
     }
 }

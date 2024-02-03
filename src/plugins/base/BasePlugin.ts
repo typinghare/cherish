@@ -1,21 +1,27 @@
-import { Entry, EntryObject, FailToCreateEntryException, FailToRegisterEntryException, Plugin } from '../../core'
+import { Entry, EntryObject, FailToCreateEntryException, FailToLoadEntryException, Plugin } from '../../core'
 import { BaseNewCommandExecutor } from './BaseNewExecutor'
+import { BaseEntryManager } from './BaseEntryManager'
 
 /**
  * Base plugin.
  */
 export class BasePlugin extends Plugin {
-    public override beforeRegister(entry: Entry, object: Partial<EntryObject>): void {
+    public readonly baseEntryManager = new BaseEntryManager()
+
+    public override onLoad(entry: Entry, object: Partial<EntryObject>): void {
         if (!('key' in object)) {
-            throw new FailToRegisterEntryException('Missing essential key: "key"')
+            throw new FailToLoadEntryException('Missing essential key: "key"')
         }
 
         if (!('value' in object)) {
-            throw new FailToRegisterEntryException('Missing essential key: "value"')
+            throw new FailToLoadEntryException('Missing essential key: "value"')
         }
 
-        entry.self<BasePluginProperties>().set('key', object.key)
-        entry.self<BasePluginProperties>().set('value', object.value)
+        const { key, value } = object
+        entry.self<BasePluginProperties>().set('key', key)
+        entry.self<BasePluginProperties>().set('value', value)
+
+        this.baseEntryManager.addKey(key as string)
     }
 
     public override onCreate(entry: Entry, object: Partial<EntryObject>): void {
@@ -27,13 +33,21 @@ export class BasePlugin extends Plugin {
             throw new FailToCreateEntryException('Missing essential key: "value"')
         }
 
+        if (this.baseEntryManager.keyExist(object.key as string)) {
+            throw new KeyAlreadyExistException(object.key as string)
+        }
+
         entry.self<BasePluginProperties>().set('key', object.key)
         entry.self<BasePluginProperties>().set('value', object.value)
     }
 
-    public override onPrint(entry: Entry, object: EntryObject): void {
+    public override onToObject(entry: Entry, object: EntryObject): void {
         object.key = entry.self<BasePluginProperties>().get('key')
         object.value = entry.self<BasePluginProperties>().get('value')
+    }
+
+    public override onPrint(entry: Entry, object: EntryObject): void {
+        this.onToObject(entry, object)
     }
 
     public override initExecutors(): void {
@@ -44,4 +58,10 @@ export class BasePlugin extends Plugin {
 export interface BasePluginProperties {
     key: string
     value: string
+}
+
+export class KeyAlreadyExistException extends Error {
+    public constructor(key: string) {
+        super(`Key already exist: ${key}`)
+    }
 }

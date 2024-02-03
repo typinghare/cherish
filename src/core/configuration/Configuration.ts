@@ -5,38 +5,33 @@ export class Configuration extends EasyConfiguration<ConfigurationData, ConfigMe
     public constructor(config: ConfigurationData) {
         const datumCreator = new DatumCreator<ConfigMetadata>()
         super({
-            userConfig: datumCreator
-                .create(config.userConfig)
-                .setMetadata({
-                    description: 'The path the user\'s configuration file.',
-                }),
-            plugins: datumCreator
-                .create(config.plugins)
-                .setMetadata({
-                    description: 'The list of enhancers to apply.',
-                }),
-            database: datumCreator
-                .create('~/.mem/default/')
-                .setMetadata({
-                    description: 'The path of the database.',
-                }),
-            serverListeningPort: datumCreator
-                .create(9385)
-                .setMetadata({
-                    description: 'The server listening port ...',
-                }),
+            'config.user': datumCreator.create(config['config.user']).setMetadata({
+                description: "The path the user's configuration file.",
+            }),
+            'server.host': datumCreator.create(config['server.host']).setMetadata({
+                description: 'The server host',
+            }),
+            'server.port': datumCreator.create(config['server.port']).setMetadata({
+                description: 'The server port',
+            }),
+            'plugin.list': datumCreator.create(config['plugin.list']).setMetadata({
+                description: 'The list of plugins to enable.',
+            }),
+            'database.path': datumCreator.create(config['database.path']).setMetadata({
+                description: 'The path of the database.',
+            }),
         })
     }
 }
 
-export class ConfigurationStack extends EasyConfigurationStack<ConfigurationData, ConfigMetadata> {
-}
+export class ConfigurationStack extends EasyConfigurationStack<ConfigurationData, ConfigMetadata> {}
 
 export interface ConfigurationData {
-    userConfig: string | undefined
-    plugins: string[]
-    database: string
-    serverListeningPort: number
+    'config.user': string | undefined
+    'server.host': string
+    'server.port': number
+    'plugin.list': string[]
+    'database.path': string
 }
 
 export interface ConfigMetadata extends Metadata {

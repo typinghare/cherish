@@ -25,6 +25,6 @@ export class StringBuffer {
      * Returns the string.
      */
     public toString(): string {
-        return this.string.toString()
+        return this.string.endsWith('\n') ? this.string : this.string + '\n'
     }
 }

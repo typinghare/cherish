@@ -3,6 +3,10 @@ import { Entry, EntryID, EntryObject } from './Entry'
 import { PluginManager } from '../plugin/PluginManager'
 import { Plugin } from '../plugin/Plugin'
 import * as util from 'util'
+import { ConfigurationManager } from '../configuration/ConfigurationManager'
+import * as fs from 'fs'
+import { createDir, parseFilepath } from '../Utility'
+import path from 'node:path'
 
 /**
  * Entry manager.
@@ -59,6 +63,8 @@ export class EntryManager extends Manager {
             plugin.onCreate(entry, object)
         })
 
+        this.byId.set(id, entry)
+
         return entry
     }
 
@@ -67,6 +73,25 @@ export class EntryManager extends Manager {
      */
     public getEntries(): IterableIterator<Entry> {
         return this.byId.values()
+    }
+
+    /**
+     * Gets all entry objects.
+     */
+    public getObjects(): EntryObject[] {
+        const pluginManager = this.application.use(PluginManager)
+        const plugins = pluginManager.getEnabledPlugins()
+        const objects: EntryObject[] = []
+        for (const entry of this.getEntries()) {
+            const object: EntryObject = { id: entry.getId() }
+            objects.push(object)
+
+            plugins.forEach((plugin) => {
+                plugin.onToObject(entry, object)
+            })
+        }
+
+        return objects
     }
 
     /**
@@ -84,9 +109,43 @@ export class EntryManager extends Manager {
             plugin.onPrint(entry, object)
         })
 
-        return util.inspect(object, {
-            colors: true,
-        })
+        return util.inspect(object, { colors: true })
+    }
+
+    /**
+     * Persists all entries.
+     */
+    public persist(): void {
+        const json: string = JSON.stringify(this.getObjects())
+        const configuration = this.use(ConfigurationManager).getCurrent()
+        const databasePath = parseFilepath(configuration.getValue('database.path'))
+        createDir(path.dirname(databasePath))
+        fs.writeFileSync(databasePath, json)
+    }
+
+    /**
+     * Loads entries from database.
+     */
+    public loadFromDatabase(): void {
+        const configuration = this.use(ConfigurationManager).getCurrent()
+        const databasePath = parseFilepath(configuration.getValue('database.path'))
+        if (!fs.existsSync(databasePath)) {
+            return
+        }
+
+        const pluginManager = this.application.use(PluginManager)
+        const plugins: Plugin[] = pluginManager.getEnabledPlugins()
+        const content: string = fs.readFileSync(databasePath).toString('utf-8')
+        const objects: EntryObject[] = JSON.parse(content)
+
+        for (const object of objects) {
+            const entry = new Entry(object.id)
+            plugins.forEach((plugin) => {
+                plugin.onLoad(entry, object)
+            })
+
+            this.register(entry)
+        }
     }
 }
 
@@ -107,4 +166,4 @@ export class FailToCreateEntryException extends Error {}
 /**
  * Thrown when trying to register an entry.
  */
-export class FailToRegisterEntryException extends Error {}
+export class FailToLoadEntryException extends Error {}

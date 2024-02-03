@@ -29,9 +29,7 @@ export class CommandLineTemplate {
         const options: Option[] = []
         for (let i = 0; tokenQueue.hasNext(); ++i) {
             const next: string | undefined = tokenQueue.getNext()
-            if (next === undefined) {
-                throw new InsufficientArgumentException(this, i)
-            }
+            if (next === undefined) break
 
             if (TokenQueue.isOption(next)) {
                 const optionLabel: string = TokenQueue.getOptionLabel(next)
@@ -40,6 +38,10 @@ export class CommandLineTemplate {
             } else {
                 args.push(next)
             }
+        }
+
+        if (args.length < this.numArgs) {
+            throw new InsufficientArgumentException(this, args.length)
         }
 
         return new CommandLine(this, args, options)

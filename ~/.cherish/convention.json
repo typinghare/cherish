@@ -1,0 +1,1 @@
+{"config.user":"~/.cherish/config.json","server.host":"127.0.0.1","server.port":"20193","plugin.list":["BasePlugin","TimePlugin","ConfigPlugin"],"database.path":"~/.cherish/db.json"}

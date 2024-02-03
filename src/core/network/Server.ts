@@ -2,6 +2,8 @@ import { EasyApplicationBased } from '@typinghare/easy-app'
 import { Application } from '../Application'
 import { ConfigurationManager } from '../configuration/ConfigurationManager'
 import net from 'net'
+import { Logger, pino } from 'pino'
+import { addTrailingNewline } from '../Utility'
 
 /**
  * Server.
@@ -13,50 +15,88 @@ export class Server extends EasyApplicationBased<Application> {
 
     private server: undefined | net.Server = undefined
 
+    private internalIsInUse: boolean = false
+
+    private readonly logger: Logger = pino()
+
     public constructor(application: Application) {
         super(application)
 
         const configuration = this.use(ConfigurationManager).getCurrent()
-        this.host = '127.0.0.1'
-        this.port = configuration.getValue('serverListeningPort')
+        this.host = configuration.getValue('server.host')
+        this.port = configuration.getValue('server.port')
     }
 
     /**
-     * Actuates socket server.
+     * Starts this server.
      */
-    public actuate(): void {
+    public start(): void {
         this.server = net.createServer((socket) => {
             const onReceiveData = (data: Buffer): void => {
                 const commandLineArgs: string[] = JSON.parse(data.toString('utf-8'))
+                const clientAddress = socket.address()
 
-                // Log the command lines
+                if ('address' in clientAddress && 'port' in clientAddress) {
+                    const url = clientAddress.address + ':' + clientAddress.port
+                    this.logger.info(`Received a command from: ${url}`)
 
+                    // Execute the command natively
+                    try {
+                        const stringBuffer = this.application.executeNatively(commandLineArgs)
+                        const message = stringBuffer !== undefined ? stringBuffer.toString() : ''
 
-                // Execute the command natively
-                const stringBuffer = this.application.executeNatively(commandLineArgs)
-                const message = stringBuffer !== undefined ? stringBuffer.toString() : ''
-                socket.write(message)
+                        // response
+                        socket.write(message)
+                    } catch (e) {
+                        if (e instanceof Error) {
+                            socket.write(
+                                'Fail to execute command: ' + addTrailingNewline(e.message)
+                            )
+                        }
+                    }
+                } else {
+                    this.logger.warn('Received a command from an unknown device.')
+                }
             }
 
             socket.on('data', onReceiveData)
         })
 
-        this.startListening()
+        if (this.server !== undefined) {
+            this.server.listen(this.port, () => {
+                this.logger.info(`Server is listening on port ${this.port} ...`)
+                this.internalIsInUse = true
+            })
+        }
     }
 
     /**
-     * Starts listening on the port, which is given by configuration.
-     * @private
+     * Stops this server.
      */
-    private startListening(): void {
-        const port: number = this.use(ConfigurationManager)
-            .getCurrent()
-            .getValue('serverListeningPort')
+    public stop(): void {
+        this.internalIsInUse = false
 
         if (this.server !== undefined) {
-            this.server.listen(port, () => {
-                console.log(`Cherish server is listening on port ${port} ...`)
+            this.server.close(() => {
+                this.logger.info('Server has been stopped.')
+
+                // Close the application
+                this.application.close()
             })
         }
+    }
+
+    /**
+     * Whether this server is starting.
+     */
+    public isStarting(): boolean {
+        return this.server !== undefined && !this.internalIsInUse
+    }
+
+    /**
+     * Whether the server is in use.
+     */
+    public isInUse(): boolean {
+        return this.internalIsInUse
     }
 }

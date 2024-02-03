@@ -1,16 +1,30 @@
-import { Entry, EntryObject, Plugin } from '../../core'
+import { Entry, EntryObject, FailToLoadEntryException, Plugin } from '../../core'
+import moment from 'moment'
 
 export class TimePlugin extends Plugin {
+    public override onLoad(entry: Entry, object: Partial<EntryObject>): void {
+        if (!('createdAt' in object)) {
+            throw new FailToLoadEntryException('Missing essential key: "createdAt"')
+        }
+
+        entry.self<TimePluginProperties>().set('createdAt', object.createdAt)
+    }
+
     public override onCreate(entry: Entry): void {
-        entry.self<TimeEnhancerProperties>().set('time', Date.now())
+        entry.self<TimePluginProperties>().set('createdAt', Date.now())
+    }
+
+    public override onToObject(entry: Entry, object: EntryObject): void {
+        object.createdAt = entry.self<TimePluginProperties>().get('createdAt')
     }
 
     public override onPrint(entry: Entry, object: EntryObject): void {
-        object.createdAt = entry.self<TimeEnhancerProperties>().get('time')
+        const createdAt: number = entry.self<TimePluginProperties>().get('createdAt')
+        object.createdAt = moment(createdAt).format('MMM DD, YYYY')
     }
 }
 
-export interface TimeEnhancerProperties {
+export interface TimePluginProperties {
     // The time (timestamp in ms) creating the entry
-    time: number
+    createdAt: number
 }

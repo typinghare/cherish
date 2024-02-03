@@ -9,11 +9,11 @@ import { ExecutorManager } from '../command/ExecutorManager'
  */
 export abstract class Plugin extends EasyApplicationBased<Application> {
     /**
-     * Called before an entry being registered.
-     * @param entry The entry to be registered.
+     * Called when an entry is loaded.
+     * @param entry The entry to be loaded.
      * @param object The entry object to register.
      */
-    public beforeRegister(entry: Entry, object: Partial<EntryObject>): void {}
+    public onLoad(entry: Entry, object: Partial<EntryObject>): void {}
 
     /**
      * Called when an entry is being created.
@@ -21,6 +21,13 @@ export abstract class Plugin extends EasyApplicationBased<Application> {
      * @param object The entry object.
      */
     public onCreate(entry: Entry, object: Partial<EntryObject>): void {}
+
+    /**
+     * Called when an entry is being converted an entry object.
+     * @param entry The entry to be converted.
+     * @param object The entry object.
+     */
+    public onToObject(entry: Entry, object: EntryObject): void {}
 
     /**
      * Called when an entry is being printed to the console.
