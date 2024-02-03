@@ -22,7 +22,7 @@ export class ConfigurationManager extends Manager {
     /**
      * Returns current configuration.
      */
-    public get(): Configuration {
+    public getCurrent(): Configuration {
         return this.configurationStack.getCurrentConfiguration()
     }
 }

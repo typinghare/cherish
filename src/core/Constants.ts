@@ -12,9 +12,8 @@ export const Constants = {
     // Default configuration
     CONF_DEFAULT: {
         userConfig: '~/.cherish/config.json',
-        plugins: [] as string[],
+        plugins: ['BasePlugin'] as string[],
         database: '~/.cherish/default/',
         serverListeningPort: 9385,
     } as const,
-
 } as const

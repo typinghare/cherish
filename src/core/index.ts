@@ -12,10 +12,13 @@ export * from './configuration/ConfigurationManager'
 export * from './entry/Entry'
 export * from './entry/EntryManager'
 
+export * from './executors'
+
 export * from './io/IOManager'
 export * from './io/StringBuffer'
 
 export * from './network/NetworkManager'
+export * from './network/Server'
 
 export * from './plugin/Plugin'
 export * from './plugin/PluginManager'

@@ -42,12 +42,6 @@ export class EntryManager extends Manager {
         this.maxId = Math.max(this.maxId, id)
         this.byId.set(id, entry)
 
-        // const pluginManager = this.application.use(PluginManager)
-        // const plugins: Plugin[] = pluginManager.getAllPlugins()
-        // plugins.forEach((plugin) => {
-        //     plugin.beforeRegister(entry, object)
-        // })
-
         return entry
     }
 
@@ -60,7 +54,7 @@ export class EntryManager extends Manager {
         const entry = new Entry(id)
 
         const pluginManager = this.application.use(PluginManager)
-        const plugins: Plugin[] = pluginManager.getAllPlugins()
+        const plugins: Plugin[] = pluginManager.getEnabledPlugins()
         plugins.forEach((plugin) => {
             plugin.onCreate(entry, object)
         })
@@ -85,9 +79,9 @@ export class EntryManager extends Manager {
         }
 
         const pluginManager = this.application.use(PluginManager)
-        const plugins: Plugin[] = pluginManager.getAllPlugins()
+        const plugins: Plugin[] = pluginManager.getEnabledPlugins()
         plugins.forEach((plugin) => {
-            plugin.onCreate(entry, object)
+            plugin.onPrint(entry, object)
         })
 
         return util.inspect(object, {

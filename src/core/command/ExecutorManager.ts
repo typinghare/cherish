@@ -15,10 +15,12 @@ export class ExecutorManager extends Manager {
 
     /**
      * Registers an executor.
+     * @param executor The executor to register.
+     * @param cover Whether to cover if the command already exists.
      */
-    public register(executor: Executor): Executor {
+    public register(executor: Executor, cover: boolean = false): Executor {
         const command: string = executor.commandLineTemplate.command
-        if (this.byName.has(command)) {
+        if (!cover && this.byName.has(command)) {
             throw new ExecutorAlreadyExistException(command)
         }
 

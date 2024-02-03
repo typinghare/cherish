@@ -1,6 +1,5 @@
 import { EasyApplication } from '@typinghare/easy-app'
 import { ConfigurationManager } from './configuration/ConfigurationManager'
-import { Configuration } from './configuration/Configuration'
 import { EntryManager } from './entry/EntryManager'
 import { ExecutorManager } from './command/ExecutorManager'
 import { PluginManager } from './plugin/PluginManager'
@@ -10,6 +9,8 @@ import { StringBuffer } from './io/StringBuffer'
 import * as net from 'net'
 import { DefaultExecutor, NewExecutor, ServerExecutor } from './executors'
 import * as process from 'process'
+import { BasePlugin } from '../plugins/base'
+import { TimePlugin } from '../plugins/time/TimePlugin'
 
 export class Application extends EasyApplication {
     public constructor() {
@@ -25,6 +26,7 @@ export class Application extends EasyApplication {
 
     public override init(): void {
         this.initExecutors()
+        this.initPlugins()
     }
 
     /**
@@ -38,10 +40,20 @@ export class Application extends EasyApplication {
     }
 
     /**
-     * Returns this application configuration.
+     * Initializes plugins.
+     * @private
      */
-    public getConfiguration(): Configuration {
-        return this.use(ConfigurationManager).getConfigurationStack().getCurrentConfiguration()
+    private initPlugins(): void {
+        const pluginManager = this.use(PluginManager)
+
+        pluginManager.register(BasePlugin)
+        pluginManager.register(TimePlugin)
+
+        // Enable some plugins
+        const plugins: string[] = this.use(ConfigurationManager).getCurrent().getValue('plugins')
+        for (const plugin of plugins) {
+            pluginManager.enable(plugin)
+        }
     }
 
     /**
@@ -58,7 +70,7 @@ export class Application extends EasyApplication {
                 client.end()
                 process.stdout.write(data.toString('utf-8'))
             }
-            networkManager.communicate(onConnected, onReceiveData)
+            networkManager.server.communicate(onConnected, onReceiveData)
         }
         const executeNatively = (): void => {
             const stringBuffer = this.executeNatively(commandLineArgs)

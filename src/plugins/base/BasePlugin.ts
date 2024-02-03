@@ -31,8 +31,13 @@ export class BasePlugin extends Plugin {
         entry.self<BasePluginProperties>().set('value', object.value)
     }
 
-    public override initializeExecutors(): void {
-        super.initializeExecutors([new BaseNewCommandExecutor()])
+    public override onPrint(entry: Entry, object: EntryObject): void {
+        object.key = entry.self<BasePluginProperties>().get('key')
+        object.value = entry.self<BasePluginProperties>().get('value')
+    }
+
+    public override initExecutors(): void {
+        this.registerExecutor(new BaseNewCommandExecutor(), true)
     }
 }
 

@@ -10,8 +10,6 @@ export class ServerExecutor extends Executor {
 
     public override execute(application: Application): undefined {
         const networkManager = application.use(NetworkManager)
-        if (!networkManager.isInUse()) {
-            networkManager.actuate()
-        }
+        networkManager.server.actuate()
     }
 }

@@ -31,16 +31,16 @@ export abstract class Plugin extends EasyApplicationBased<Application> {
 
     /**
      * Initializes executors.
-     * @param executors The executors to be registered.
      */
-    public initializeExecutors(executors: Executor[] = []): void {
-        if (executors === undefined) {
-            return
-        }
+    public initExecutors(): void {}
 
+    /**
+     * Registers an executor.
+     * @param executor The executor to register.
+     * @param cover Whether to cover if the command already exists.
+     */
+    public registerExecutor(executor: Executor, cover: boolean = false): void {
         const executorManager = this.application.use(ExecutorManager)
-        for (const executor of executors) {
-            executorManager.register(executor)
-        }
+        executorManager.register(executor, cover)
     }
 }
